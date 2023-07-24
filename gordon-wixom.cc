@@ -35,6 +35,7 @@ static Point3D trapezoid(const std::function<Point3D(double)> &f, double a, doub
   return (s + sum * h) / 2;
 }
 
+[[maybe_unused]]
 static Point3D integral(const std::function<Point3D(double)> &f, double a, double b,
                         size_t max_iterations, double tolerance) {
   Point3D s, s_prev, st_prev(0.0, 0.0, 0.0);
@@ -48,6 +49,25 @@ static Point3D integral(const std::function<Point3D(double)> &f, double a, doubl
     st_prev = st;
   }
   return s;
+}
+
+[[maybe_unused]]
+static Point3D quadrature(const std::function<Point3D(double)> &f,
+                          double a, double b, size_t n) {
+  const static double gauss[] = {-0.861136312, 0.347854845,
+                                 -0.339981044, 0.652145155,
+                                 0.339981044, 0.652145155,
+                                 0.861136312, 0.347854845};
+  Point3D sum(0.0, 0.0, 0.0);
+  for (size_t j = 0; j < n; ++j) {
+    double a1 = a + (b - a) * j / n;
+    double b1 = a1 + (b - a) / n;
+    for (size_t i = 0; i < 8; i += 2) {
+      double u = ((b1 - a1) * gauss[i] + a1 + b1) * 0.5;
+      sum += f(u) * gauss[i+1] * (b1 - a1) * 0.5;
+    }
+  }
+  return sum;
 }
 
 
@@ -234,6 +254,7 @@ Point3D GordonWixom::eval(const Point2D &uv) const {
                         (uv - endpoints[0]).norm() / (endpoints[1] - endpoints[0]).norm());
   };
   return integral(f, 0.0, 2.0 * M_PI, 10, 1e-8) / (2.0 * M_PI);
+  // return quadrature(f, 0.0, 2.0 * M_PI, 100) / (2.0 * M_PI);
 }
 
 TriMesh GordonWixom::eval(size_t resolution) const {
