@@ -253,8 +253,8 @@ Point3D GordonWixom::eval(const Point2D &uv) const {
                         indices[1], params[1], cosangle(uv, endpoints[1], domain_[indices[1]]),
                         (uv - endpoints[0]).norm() / (endpoints[1] - endpoints[0]).norm());
   };
-  return integral(f, 0.0, 2.0 * M_PI, 10, 1e-8) / (2.0 * M_PI);
-  // return quadrature(f, 0.0, 2.0 * M_PI, 100) / (2.0 * M_PI);
+  // return integral(f, 0.0, 2.0 * M_PI, 10, 1e-8) / (2.0 * M_PI);
+  return quadrature(f, 0.0, 2.0 * M_PI, 100) / (2.0 * M_PI);
 }
 
 TriMesh GordonWixom::eval(size_t resolution) const {
