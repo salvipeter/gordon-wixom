@@ -1,5 +1,6 @@
 *~
 *.o
+*.gbp
 *.gwx
 gordon-wixom-test
 test.obj
