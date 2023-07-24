@@ -198,11 +198,11 @@ Point3D GordonWixom::hermitePoint(size_t i1, double t1, double cos1,
   auto p1 = outer_[i1]->eval(t1, 1, der);
   auto du1 = der[1];
   auto dv1 = inner_[i1]->eval(t1) - p1;
-  auto d1 = du1 * cos1 + dv1 * (1.0 - std::abs(cos1));
+  auto d1 = du1 * cos1 + dv1 * std::sqrt(1.0 - cos1 * cos1);
   auto p2 = outer_[i2]->eval(t2, 1, der);
   auto du2 = der[1];
   auto dv2 = inner_[i2]->eval(t2) - p2;
-  auto d2 = du2 * cos2 + dv2 * (1.0 - std::abs(cos2));
+  auto d2 = du2 * cos2 + dv2 * std::sqrt(1.0 - cos2 * cos2);
   BSCurve hermite({ p1, p1 + d1 / 3, p2 + d2 / 3, p2 });
   return hermite.eval(ratio);
 }
