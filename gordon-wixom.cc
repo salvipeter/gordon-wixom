@@ -203,16 +203,14 @@ Point3D GordonWixom::hermitePoint(size_t i1, double t1, double cos1,
   auto du2 = der[1];
   auto dv2 = inner_[i2]->eval(t2) - p2;
   auto d2 = du2 * cos2 + dv2 * std::sqrt(1.0 - cos2 * cos2);
+  // Linear (C0) version:
+  // return p1 * (1 - ratio) + p2 * ratio;
   BSCurve hermite({ p1, p1 + d1 / 3, p2 + d2 / 3, p2 });
   return hermite.eval(ratio);
 }
 
 static double cosangle(const Point2D &a, const Point2D &b, const Point2D &c) {
-  auto safenorm = [](const Point2D &u) {
-    double n = u.norm();
-    return n > 0 ? u / n : u;
-  };
-  return safenorm(a - b) * safenorm(c - b);
+  return (a - b).normalize() * (c - b).normalize();
 }
 
 // Actually checks only that it is on the line,
@@ -232,17 +230,16 @@ Point3D GordonWixom::eval(const Point2D &uv) const {
     std::vector<Point2D> endpoints;
     std::vector<double> params;
     for (size_t i = 0; i < n_; ++i) {
-      auto s = intersect(uv, theta, domain_[(i+n_-1)%n_], domain_[i]);
-      if (!s)
-        continue;
-      indices.push_back(i);
-      endpoints.push_back(domain_[(i+n_-1)%n_] * (1 - *s) + domain_[i] * *s);
-      params.push_back(*s);
+      if (auto s = intersect(uv, theta, domain_[(i+n_-1)%n_], domain_[i])) {
+        indices.push_back(i);
+        endpoints.push_back(domain_[(i+n_-1)%n_] * (1 - *s) + domain_[i] * *s);
+        params.push_back(*s);
+      }
     }
     if (indices.size() < 2)
       throw std::runtime_error("intersection error");
     if (indices.size() > 2) {
-      // kutykurutty
+      // Numerical problems near the corner
       if (indices[1] == indices[0] + 1) {
         indices.erase(indices.begin());
         params.erase(params.begin());
